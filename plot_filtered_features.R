@@ -241,44 +241,12 @@ for (i in 1:length(hit)) {
   hcum$counts <- cumsum(hcum$counts)
   
   p <- plot_ly(alpha = 0.6) %>%
-    add_bars(x = b, y = h$counts, type = "bar", name = "absolute numbers", hovertemplate = paste('<b>%{y}</b> cells have <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
+    add_bars(x = b, y = max(hcum$counts)-hcum$counts, type = "bar", name = "diminishing numbers", hovertemplate = paste('<b>%{y}</b> cells have more than <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
     add_bars(x = b, y = hcum$counts, type = "bar", name = "cumulative numbers", hovertemplate = paste('<b>%{y}</b> cells have <b>%{x}</b> or less copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
+    add_bars(x = b, y = h$counts, type = "bar", name = "absolute numbers", hovertemplate = paste('<b>%{y}</b> cells have <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
     layout(barmode = "overlay", title = glue("absolute gene expression of {foi[[1]][i]}"), xaxis = xlabel, yaxis = ylabel)
   p
   savefile <- glue("{output_dir}{plot_file_prefix}_{foi[[1]][i]}.html")
   saveWidgetFix(as_widget(p), savefile)
 }
 cat(" done.\n")
-
-#cat("saving plots ...")
-#for (i in 1:length(list_foi)) {
-#  png(glue("{plot_dir}/{plot_file_prefix}_{foi[[1]][i]}.png"), width = 1200, height = 1200)
-#  plot(list_foi[[i]], main = glue("absolute gene expression of {foi[[1]][i]}"), ylab = "cell numbers", xlab = "gene copies")
-#  dev.off()
-#}
-#cat(" done.\n")
-
-####
-#densityplot
-## Make some sample data
-#x <- sample(0:30, 200, replace=T, prob=15 - abs(15 - 0:30))
-#x <- filtered_mat[hit[1], ]
-#t <- table(x)
-#b <- c(min(strtoi((attr(t, "dimnames")$x))):max(strtoi((attr(t, "dimnames")$x))))
-#bb <- c(0, b + 0.5)
-#b <- c(0.0, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5)
-#x <- t
-## Calculate and plot the two histograms
-#hcum <- h <- hist(x, breaks = c(1:length(x)-1), plot = FALSE)
-#hcum <- h <- hist(x, breaks = c(min(strtoi((attr(t, "dimnames")$x))):max(strtoi((attr(t, "dimnames")$x)))), plot = FALSE)
-
-#hcum <- h <- hist(x, breaks = bb, plot = FALSE)
-#hcum$counts <- cumsum(hcum$counts)
-#plot(hcum, main = "", freq = TRUE)
-#plot(h, add = TRUE, col = "grey", freq = TRUE)
-
-## Plot the density and cumulative density
-#d <- density(x)
-#d <- density(t)
-#lines(x = d$x, y = d$y * length(bb) * diff(h$breaks)[1], lwd = 2)
-#lines(x = d$x, y = cumsum(d$y)/max(cumsum(d$y)) * length(bb), lwd = 2)
