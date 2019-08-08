@@ -1,8 +1,16 @@
+# Sparse and Dense Matrix Classes and Methods
 library(Matrix)
+
+# Interpreted String Literals
 library(glue)
+
+# Create Interactive Web Graphics via 'plotly.js'
 library(plotly)
+
+# HTML Widgets for R
 library(htmlwidgets)
 
+# wrapper for saveWidget
 saveWidgetFix <- function (widget, file, ...) {
   ## A wrapper to saveWidget which compensates for arguable BUG in
   ## saveWidget which requires `file` to be in current working
@@ -15,37 +23,54 @@ saveWidgetFix <- function (widget, file, ...) {
   saveWidget(widget, file = file, ...)
 }
 
+# exit without additional error message
 exit <- function() {
   .Internal(.invokeRestart(list(NULL, NULL), NULL))
 }
 
+# file error message and exit
 fileError <- function(a) {
   cat("\nFile error: ", a, " not found or no read/write permission.\nExiting.", sep = "")
   exit()
 }
 
-matrix_dir = "/media/user/data1/scRNAseq/rara/analysis/single_counts/rara_p2_c_1200/outs/filtered_feature_bc_matrix"
+# init
+# path to input files
+matrix_dir = "/media/hattesoul/data1/scRNAseq/rara/analysis/aggr/v3-1-0_rara_unnorm_aggr/outs/filtered_feature_bc_matrix "
 #matrix_dir = "/media/user/data1/scRNAseq/UK-1473/analysis/single_counts/UK-1473_6000/outs/filtered_feature_bc_matrix"
-#output_dir = "./output"
-output_dir = "/media/user/data1/scRNAseq/rara/analysis/reanalyze/rara_p2_c_re/outs "
-plot_file_prefix = "rara_p2_c"
+
+# path to features of interest file
+# each line contains one feature, like TP63 or FOXJ1 etc.
 foi_file = "./assets/foi.txt"
-minFeatureCount <- 10000
-maxFeatureCount <- 0 # if maxFeatureCount = 0 then no limit is assumed
-csvFileID = "rara_1-6_unnorm"
 
-#cat(matrix_dir, "\n")
+# path to output file
+output_dir = "./output"
+#output_dir = "/media/user/data1/scRNAseq/rara/analysis/reanalyze/rara_p2_c_re/outs "
 
+# ID for output file name
+plot_file_prefix = "rara_unnorm_aggr"
+
+# limits for UMI count
+minUMICount <- 10000
+maxUMICount <- 100000 # if maxUMICount = 0 then no limit is assumed
+
+# limits for unique feature count
+minUniqueFeatureCount <- 2500
+maxUniqueFeatureCount <- 100000 # if maxUniqueFeatureCount = 0 then no limit is assumed
+
+# append "/" to path if necessary
 matrix_dir <- gsub("^\\s+|\\s+$", "", matrix_dir)
 if(substr(matrix_dir, nchar(matrix_dir), nchar(matrix_dir)) != "/"){
   matrix_dir <- glue("{matrix_dir}/")
 }
 
+# append "/" to path if necessary
 output_dir <- gsub("^\\s+|\\s+$", "", output_dir)
 if(substr(output_dir, nchar(output_dir), nchar(output_dir)) != "/"){
   output_dir <- glue("{output_dir}/")
 }
 
+# check if files are accessible
 cat("checking matrix files ...", sep = "")
 if(!!file.access(paste0(matrix_dir, "barcodes.tsv.gz"), mode = 4)){
   fileError(paste0(matrix_dir, "barcodes.tsv.gz"))
@@ -60,26 +85,31 @@ cat(" done.\n")
 
 cat("checking write permissions ...", sep = "")
 if(!!file.access(".", mode = 2)){
-  fileError(paste0(output_dir, csvFileID))
+  fileError(paste0(output_dir, plot_file_prefix))
 }
 cat(" done.\n")
 
-if(maxFeatureCount > 0){
-  if(maxFeatureCount < minFeatureCount){
-    cat("WARNING! maxFeatureCount (", maxFeatureCount, ") is not greater than minFeatureCount (", minFeatureCount, "). Switching limits ...", sep = "")
-    minFeatureCount <- minFeatureCount + maxFeatureCount
-    maxFeatureCount <- minFeatureCount - maxFeatureCount
-    minFeatureCount <- minFeatureCount - maxFeatureCount
+# check if limits are set properly, swap them if not
+if(maxUMICount > 0){
+  if(maxUMICount < minUMICount){
+    cat("WARNING! maxUMICount (", maxUMICount, ") is not greater than minUMICount (", minUMICount, "). Swapping UMI limits ...", sep = "")
+    minUMICount <- minUMICount + maxUMICount
+    maxUMICount <- minUMICount - maxUMICount
+    minUMICount <- minUMICount - maxUMICount
+    cat(" done.\n")
+  }
+}
+if(maxUniqueFeatureCount > 0){
+  if(maxUniqueFeatureCount < minUniqueFeatureCount){
+    cat("WARNING! maxUniqueFeatureCount (", maxUniqueFeatureCount, ") is not greater than minUniqueFeatureCount (", minUniqueFeatureCount, "). Swapping unique feature limits ...", sep = "")
+    minUniqueFeatureCount <- minUniqueFeatureCount + maxUniqueFeatureCount
+    maxUniqueFeatureCount <- minUniqueFeatureCount - maxUniqueFeatureCount
+    minUniqueFeatureCount <- minUniqueFeatureCount - maxUniqueFeatureCount
     cat(" done.\n")
   }
 }
 
-if(maxFeatureCount > 0){
-  csvFile = glue("{output_dir}{csvFileID}_barcodes_{minFeatureCount}-{maxFeatureCount}")
-} else {
-  csvFile = glue("{output_dir}{csvFileID}_barcodes_{minFeatureCount}")
-} 
-
+# load necessary Cell Ranger files
 cat("loading barcodes from ", matrix_dir, " ...", sep = "")
 barcode.path <- paste0(matrix_dir, "barcodes.tsv.gz")
 cat(" done.\n")
@@ -93,6 +123,7 @@ matrix.path <- paste0(matrix_dir, "matrix.mtx.gz")
 mat <- readMM(file = matrix.path)
 cat(" done.\n")
 
+# add column and row names
 cat("reading feature and barcode names ...")
 feature.names = read.delim(features.path, 
                            header = FALSE,
@@ -104,39 +135,82 @@ colnames(mat) = barcode.names$V1
 rownames(mat) = feature.names$V2
 cat(" done.\n")
 
+# load file with features of interest
 cat("loading features of interest from ", foi_file, " ...", sep = "")
 foi <- read.table(foi_file, header = FALSE)
 cat(" done.\n")
 cat("summary:\n  barcodes: ", attr(mat,'Dim')[2], "\n  features: ", attr(mat,'Dim')[1], "\n  features of interest: ", lengths(foi), "\n", sep = "")
 
-cat("counting features per barcode ...")
-featureSums = colSums(mat)
+# print numerical values rather in fixed notation than in exponential notation
+options("scipen" = 10)
+
+# count UMIs
+cat("counting UMIs per barcode ...")
+UMISums = colSums(mat)
 cat(" done.\n")
 
-if(maxFeatureCount > 0){
-  cat("filtering barcodes with minimum ", minFeatureCount, " and maximum ", maxFeatureCount, " features ...", sep = "")
+# apply UMI filter to barcodes (cells)
+if(maxUMICount > 0){
+  cat("filtering barcodes with minimum ", minUMICount, " and maximum ", maxUMICount, " UMIs ...", sep = "")
 } else {
-  cat("filtering barcodes with minimum ", minFeatureCount, " features ...", sep = "")
+  cat("filtering barcodes with minimum ", minUMICount, " UMIs ...", sep = "")
 } 
-validBarcodes <- vector()
-for (i in 1:length(featureSums)) {
-  if(featureSums[i] >= minFeatureCount){
-    if(maxFeatureCount > 0){
-      if(featureSums[i] <= maxFeatureCount){
-        validBarcodes <- c(validBarcodes, featureSums[i])
+preValidBarcodes <- vector()
+preValidIndices <- vector()
+for (i in 1:length(UMISums)) {
+  if(UMISums[i] >= minUMICount){
+    if(maxUMICount > 0){
+      if(UMISums[i] <= maxUMICount){
+        preValidBarcodes <- c(preValidBarcodes, UMISums[i])
+        preValidIndices <- c(preValidIndices, i)
       }
     } else {
-      validBarcodes <- c(validBarcodes, featureSums[i])
+      preValidBarcodes <- c(preValidBarcodes, UMISums[i])
+      preValidIndices <- c(preValidIndices, i)
     }
   }
 }
 cat(" done.\n")
-if(maxFeatureCount > 0){
-  cat("summary:\n  barcodes with minimum ", minFeatureCount, " and maximum ", maxFeatureCount, " features: ", length(validBarcodes), "\n", sep = "")
+if(maxUMICount > 0){
+  cat("summary:\n  barcodes with minimum ", minUMICount, " and maximum ", maxUMICount, " UMIs: ", length(preValidBarcodes), "\n", sep = "")
 } else {
-  cat("summary:\n  barcodes with minimum ", minFeatureCount, " features: ", length(validBarcodes), "\n", sep = "")
-} 
+  cat("summary:\n  barcodes with minimum ", minUMICount, " UMIs: ", length(preValidBarcodes), "\n", sep = "")
+}
 
+# count unique features
+cat("counting unique features per barcode ...")
+uniqueFeatureSums = colSums(mat[ ,preValidIndices] != 0)
+cat(" done.\n")
+
+# apply unique feature filter to barcodes (cells)
+if(maxUniqueFeatureCount > 0){
+  cat("filtering barcodes with minimum ", minUniqueFeatureCount, " and maximum ", maxUniqueFeatureCount, " unique features ...", sep = "")
+} else {
+  cat("filtering barcodes with minimum ", minUniqueFeatureCount, " unique features ...", sep = "")
+} 
+validBarcodes <- vector()
+for (i in 1:length(uniqueFeatureSums)) {
+  if(uniqueFeatureSums[i] >= minUniqueFeatureCount){
+    if(maxUniqueFeatureCount > 0){
+      if(uniqueFeatureSums[i] <= maxUniqueFeatureCount){
+        validBarcodes <- c(validBarcodes, uniqueFeatureSums[i])
+      }
+    } else {
+      validBarcodes <- c(validBarcodes, uniqueFeatureSums[i])
+    }
+  }
+}
+cat(" done.\n")
+if(maxUniqueFeatureCount > 0){
+  cat("summary:\n  barcodes with minimum ", minUniqueFeatureCount, " and maximum ", maxUniqueFeatureCount, " unique features: ", length(validBarcodes), "\n", sep = "")
+} else {
+  cat("summary:\n  barcodes with minimum ", minUniqueFeatureCount, " features: ", length(validBarcodes), "\n", sep = "")
+}
+
+# set default behavior for prining numerical values
+options("scipen" = 0)
+
+# reduce matrix to contain valid barcodes only
 cat("filtering by valid barcodes ...")
 filtered_mat <- matrix()
 codes <- vector()
@@ -146,6 +220,7 @@ for (i in 1:length(validBarcodes)) {
 filtered_mat <- mat[, codes]
 cat(" done.\n")
 
+# get row numbers corresponding to features of interest
 cat("filtering by features of interest ...")
 hit <- vector()
 for (i in 1:lengths(foi)) {
@@ -153,17 +228,8 @@ for (i in 1:lengths(foi)) {
 }
 cat(" done.\n")
 
-cat("counting cells with features of interest ...")
-list_foi <- vector(mode = "list")
-for (i in 1:length(hit)) {
-  list_foi[[i]] <- table(filtered_mat[hit[i], ])
-}
-cat(" done.\n")
-
 cat("ploting cell numbers with features of interest ...")
-for (i in 1:length(list_foi)) {
-#  plot_ly(x = filtered_mat[hit[i], ], type = "histogram")
-#  plot(list_foi[[i]], main = glue("absolute gene expression of {foi[[1]][i]}"), ylab = "cell numbers", xlab = "gene copies")
+for (i in 1:length(hit)) {
   xlabel <- list(title = "number of gene copies")
   ylabel <- list(title = "number of cells")
   x <- filtered_mat[hit[i], ]
