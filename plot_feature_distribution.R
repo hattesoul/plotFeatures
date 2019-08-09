@@ -119,6 +119,9 @@ matrix.path <- paste0(matrix_dir, "matrix.mtx.gz")
 mat <- readMM(file = matrix.path)
 cat(" done.\n")
 
+# print numerical values rather in fixed notation than in exponential notation
+options("scipen" = 10)
+
 # add column and row names
 cat("reading feature and barcode names ...")
 feature.names = read.delim(features.path, 
@@ -132,12 +135,17 @@ rownames(mat) = feature.names$V2
 cat(" done.\n")
 cat("summary:\n  barcodes: ", attr(mat,'Dim')[2], "\n  features: ", attr(mat,'Dim')[1], "\n", sep = "")
 
-# print numerical values rather in fixed notation than in exponential notation
-options("scipen" = 10)
+# remove non-expressed features
+cat("removing features that are not expressed at all ...")
+reducedMat = mat[apply(mat, 1, function(row) any(row !=0 )), ]
+cat(" done.\n")
+cat("summary:\n  removed features: ", dim(mat)[1] - dim(reducedMat)[1], "\n", sep = "")
+cat("summary:\n  features left: ", dim(reducedMat)[1], "\n", sep = "")
+#dim(reducedMat)[1]
 
 # count UMIs
 cat("counting UMIs per barcode ...")
-UMISums = colSums(mat)
+UMISums = colSums(reducedMat)
 cat(" done.\n")
 
 # apply UMI filter to barcodes (cells)
@@ -170,7 +178,7 @@ if (maxUMICount > 0) {
 
 # count unique features
 cat("counting unique features per barcode ...")
-uniqueFeatureSums = colSums(mat[ ,preValidIndices] != 0)
+uniqueFeatureSums = colSums(reducedMat[ ,preValidIndices] != 0)
 cat(" done.\n")
 
 # apply unique feature filter to barcodes (cells)
@@ -206,9 +214,9 @@ cat("filtering by valid barcodes ...")
 filtered_mat <- matrix()
 codes <- vector()
 for (i in 1:length(validBarcodes)) {
-  codes <- c(codes, match(attr(validBarcodes, "names")[i], dimnames(mat)[[2]]))
+  codes <- c(codes, match(attr(validBarcodes, "names")[i], dimnames(reducedMat)[[2]]))
 }
-filtered_mat <- mat[, codes]
+filtered_mat <- reducedMat[, codes]
 cat(" done.\n")
 
 # count UMIs of filtered barcodes
