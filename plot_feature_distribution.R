@@ -47,12 +47,12 @@ output_dir = "./output"
 plot_file_prefix = "rara_unnorm_aggr"
 
 # limits for UMI count
-minUMICount <- 10000
-maxUMICount <- 75000 # if maxUMICount = 0 then no limit is assumed
+minUMICount <- 0
+maxUMICount <- 0 # if maxUMICount = 0 then no limit is assumed
 
 # limits for unique feature count
-minUniqueFeatureCount <- 2500
-maxUniqueFeatureCount <- 10000 # if maxUniqueFeatureCount = 0 then no limit is assumed
+minUniqueFeatureCount <- 0
+maxUniqueFeatureCount <- 0 # if maxUniqueFeatureCount = 0 then no limit is assumed
 
 # append "/" to path if necessary
 matrix_dir <- gsub("^\\s+|\\s+$", "", matrix_dir)
@@ -267,8 +267,10 @@ ylabel <- list(title = "number of cells")
 p <- plot_ly(
   alpha = 0.6
 ) %>%
-add_histogram(x = ~(validUniqueFeatureSums), xbins = list(start = 0, size = binSizeUniqueFeatures, end = upperLimitUniqueFeatures), name = "unique features", text = relativeUniqueFeatureText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> unique features', sep = "")) %>%
-add_histogram(x = ~(validUMISums), xbins = list(start = 0, size = binSizeUMIs, end = upperLimitUMIs), name = "UMIs", text = relativeUMIText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> UMIs', sep = "")) %>%
+add_histogram(x = ~(validUniqueFeatureSums), xbins = list(start = 0, size = binSizeUniqueFeatures, end = upperLimitUniqueFeatures), name = glue("unique features
+  (bin size: {binSizeUniqueFeatures})"), text = relativeUniqueFeatureText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> unique features', sep = "")) %>%
+add_histogram(x = ~(validUMISums), xbins = list(start = 0, size = binSizeUMIs, end = upperLimitUMIs), name = glue("UMIs
+  (bin size: {binSizeUMIs})"), text = relativeUMIText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> UMIs', sep = "")) %>%
 layout(barmode = "overlay", title = glue("distribution of unique feature/UMI counts"), xaxis = xlabel, yaxis = ylabel, hovermode = "compare")
 p
 savefile <- glue("{output_dir}{plot_file_prefix}_feat_dist.html")
