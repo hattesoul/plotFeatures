@@ -139,9 +139,7 @@ cat("summary:\n  barcodes: ", attr(mat,'Dim')[2], "\n  features: ", attr(mat,'Di
 cat("removing features that are not expressed at all ...")
 reducedMat = mat[apply(mat, 1, function(row) any(row !=0 )), ]
 cat(" done.\n")
-cat("summary:\n  removed features: ", dim(mat)[1] - dim(reducedMat)[1], "\n", sep = "")
-cat("summary:\n  features left: ", dim(reducedMat)[1], "\n", sep = "")
-#dim(reducedMat)[1]
+cat("summary:\n  removed features: ", dim(mat)[1] - dim(reducedMat)[1], "\n  features left: ", dim(reducedMat)[1], sep = "")
 
 # count UMIs
 cat("counting UMIs per barcode ...")
