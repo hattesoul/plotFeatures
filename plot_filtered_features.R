@@ -235,21 +235,28 @@ for (i in 1:lengths(foi)) {
 cat(" done.\n")
 
 cat("ploting cell numbers with features of interest ...")
+xlabel <- list(title = "number of gene copies")
+ylabel <- list(title = "number of cells")
 for (i in 1:length(hit)) {
-  xlabel <- list(title = "number of gene copies")
-  ylabel <- list(title = "number of cells")
   x <- filtered_mat[hit[i], ]
   t <- table(x)
+
   # get break points
   b <- c(min(strtoi((attr(t, "dimnames")$x))):max(strtoi((attr(t, "dimnames")$x))))
   bb <- c(0, b + 0.5)
   hcum <- h <- hist(x, breaks = bb, plot = FALSE)
   hcum$counts <- cumsum(hcum$counts)
+
+  # calculate relative values
+  cellCount = sum(h$counts)
+  relativeSingleText = round(h$counts*100/cellCount, digits = 3)
+  relativeCumulativeText = round(hcum$counts*100/cellCount, digits = 3)
+  relativeDiminishingText = round((max(hcum$counts)-hcum$counts)*100/cellCount, digits = 3)
   
   p <- plot_ly(alpha = 0.6) %>%
-    add_bars(x = b, y = max(hcum$counts)-hcum$counts, type = "bar", name = "diminishing numbers", hovertemplate = paste('<b>%{y}</b> cells have more than <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
-    add_bars(x = b, y = hcum$counts, type = "bar", name = "cumulative numbers", hovertemplate = paste('<b>%{y}</b> cells have <b>%{x}</b> or less copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
-    add_bars(x = b, y = h$counts, type = "bar", name = "absolute numbers", hovertemplate = paste('<b>%{y}</b> cells have <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
+    add_bars(x = b, y = max(hcum$counts)-hcum$counts, type = "bar", name = "diminishing numbers", text = relativeDiminishingText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have more than <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
+    add_bars(x = b, y = hcum$counts, type = "bar", name = "cumulative numbers", text = relativeCumulativeText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> or less copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
+    add_bars(x = b, y = h$counts, type = "bar", name = "absolute numbers", text = relativeSingleText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
     layout(barmode = "overlay", title = glue("absolute gene expression of {foi[[1]][i]}"), xaxis = xlabel, yaxis = ylabel, hovermode = "compare")
   p
   savefile <- glue("{output_dir}{plot_file_prefix}_{foi[[1]][i]}.html")
