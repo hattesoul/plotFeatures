@@ -144,9 +144,15 @@ cat("summary:\n  barcodes: ", attr(mat,'Dim')[2], "\n  features: ", attr(mat,'Di
 # print numerical values rather in fixed notation than in exponential notation
 options("scipen" = 10)
 
+# remove non-expressed features
+cat("removing features that are not expressed at all ...")
+reducedMat = mat[apply(mat, 1, function(row) any(row !=0 )), ]
+cat(" done.\n")
+cat("summary:\n  removed features: ", dim(mat)[1] - dim(reducedMat)[1], "\n  features left: ", dim(reducedMat)[1], "\n", sep = "")
+
 # count UMIs
 cat("counting UMIs per barcode ...")
-UMISums = colSums(mat)
+UMISums = colSums(reducedMat)
 cat(" done.\n")
 
 # apply UMI filter to barcodes (cells)
@@ -179,7 +185,7 @@ if(maxUMICount > 0){
 
 # count unique features
 cat("counting unique features per barcode ...")
-uniqueFeatureSums = colSums(mat[ ,preValidIndices] != 0)
+uniqueFeatureSums = colSums(reducedMat[ ,preValidIndices] != 0)
 cat(" done.\n")
 
 # apply unique feature filter to barcodes (cells)
@@ -215,9 +221,9 @@ cat("filtering by valid barcodes ...")
 filtered_mat <- matrix()
 codes <- vector()
 for (i in 1:length(validBarcodes)) {
-  codes <- c(codes, match(attr(validBarcodes, "names")[i], dimnames(mat)[[2]]))
+  codes <- c(codes, match(attr(validBarcodes, "names")[i], dimnames(reducedMat)[[2]]))
 }
-filtered_mat <- mat[, codes]
+filtered_mat <- reducedMat[, codes]
 cat(" done.\n")
 
 # get row numbers corresponding to features of interest
@@ -244,7 +250,7 @@ for (i in 1:length(hit)) {
     add_bars(x = b, y = max(hcum$counts)-hcum$counts, type = "bar", name = "diminishing numbers", hovertemplate = paste('<b>%{y}</b> cells have more than <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
     add_bars(x = b, y = hcum$counts, type = "bar", name = "cumulative numbers", hovertemplate = paste('<b>%{y}</b> cells have <b>%{x}</b> or less copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
     add_bars(x = b, y = h$counts, type = "bar", name = "absolute numbers", hovertemplate = paste('<b>%{y}</b> cells have <b>%{x}</b> copies of <b>',foi[[1]][i],'</b>', sep = "")) %>%
-    layout(barmode = "overlay", title = glue("absolute gene expression of {foi[[1]][i]}"), xaxis = xlabel, yaxis = ylabel)
+    layout(barmode = "overlay", title = glue("absolute gene expression of {foi[[1]][i]}"), xaxis = xlabel, yaxis = ylabel, hovermode = "compare")
   p
   savefile <- glue("{output_dir}{plot_file_prefix}_{foi[[1]][i]}.html")
   saveWidgetFix(as_widget(p), savefile)
