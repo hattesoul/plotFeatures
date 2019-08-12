@@ -81,6 +81,9 @@ if(!!file.access(paste0(matrix_dir, "features.tsv.gz"), mode = 4)){
 if(!!file.access(paste0(matrix_dir, "matrix.mtx.gz"), mode = 4)){
   fileError(paste0(matrix_dir, "matrix.mtx.gz"))
 }
+if(!!file.access(foi_file, mode = 4)){
+  fileError(foi_file)
+}
 cat(" done.\n")
 
 cat("checking write permissions ...", sep = "")
