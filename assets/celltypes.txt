@@ -6,3 +6,4 @@ secretory cells,--TP63,--KRT5,--MKI67,++SCGB3A1,++SCGB1A1,++MUC5B,++ELF3,--FOXJ1
 secretory cells (cycling),--TP63,--KRT5,++MKI67,++SCGB3A1,++SCGB1A1,++MUC5B,++ELF3,--FOXJ1
 secretory/mature ciliated cells,--TP63,--KRT5,--MKI67,++SCGB3A1,++SCGB1A1,++MUC5B,++ELF3,++FOXJ1
 mature ciliated cells,--TP63,--KRT5,--MKI67,--SCGB3A1,--SCGB1A1,--MUC5B,--ELF3,++FOXJ1
+artifical cells,--TP63,--KRT5,--MKI67,--SCGB3A1,--SCGB1A1,--MUC5B,--ELF3,++FOXJ1
