@@ -36,12 +36,12 @@ fileError <- function(a) {
 
 # init
 # path to input files
-matrix_dir = "/media/hattesoul/data1/scRNAseq/rara/analysis/aggr/v3-1-0_rara_unnorm_aggr/outs/filtered_feature_bc_matrix "
-#matrix_dir = "/media/user/data1/scRNAseq/UK-1473/analysis/single_counts/UK-1473_6000/outs/filtered_feature_bc_matrix"
+matrix_dir = "/media/data1/scRNAseq/rara/analysis/aggr/v3-1-0_rara_unnorm_aggr/outs/filtered_feature_bc_matrix "
+#matrix_dir = "/media/data1/scRNAseq/UK-1473/analysis/single_counts/UK-1473_6000/outs/filtered_feature_bc_matrix"
 
 # path to output file
 output_dir = "./output"
-#output_dir = "/media/user/data1/scRNAseq/rara/analysis/reanalyze/rara_p2_c_re/outs "
+#output_dir = "/media/data1/scRNAseq/rara/analysis/reanalyze/rara_p2_c_re/outs "
 
 # ID for output file name
 plot_file_prefix = "rara_unnorm_aggr"
@@ -228,7 +228,7 @@ validUniqueFeatureSums = colSums(filtered_mat != 0)
 cat(" done.\n")
 
 # manually calculate bin sizes and bin numbers for relative values
-cat("ploting unique features/UMIs per barcode ...")
+cat("ploting unique features/UMIs per barcode as histogram ...")
 
 # set bin sizes
 binSizeUniqueFeatures = 250
@@ -268,17 +268,48 @@ while(relativeUMIBins[1] == 0) {
 relativeUniqueFeatureText = c(relativeUniqueFeatureBins, rep(NA_character_, length(validUniqueFeatureSums) - length(relativeUniqueFeatureBins)))
 relativeUMIText = c(relativeUMIBins, rep(NA_character_, length(validUMISums) - length(relativeUMIBins)))
 
+# plot histograms of feature/UMI distribution
 xlabel <- list(title = "number of unique features/UMIs", rangemode = "tozero")
 ylabel <- list(title = "number of cells")
-p <- plot_ly(
+p1 <- plot_ly(
   alpha = 0.6
-) %>%
-add_histogram(x = ~(validUniqueFeatureSums), xbins = list(start = 0, size = binSizeUniqueFeatures, end = upperLimitUniqueFeatures), name = glue("unique features
-  (bin size: {binSizeUniqueFeatures})"), text = relativeUniqueFeatureText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> unique features', sep = "")) %>%
-add_histogram(x = ~(validUMISums), xbins = list(start = 0, size = binSizeUMIs, end = upperLimitUMIs), name = glue("UMIs
-  (bin size: {binSizeUMIs})"), text = relativeUMIText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> UMIs', sep = "")) %>%
-layout(barmode = "overlay", title = glue("distribution of unique feature/UMI counts"), xaxis = xlabel, yaxis = ylabel, hovermode = "compare")
-p
-savefile <- glue("{output_dir}{plot_file_prefix}_feat_dist.html")
-saveWidgetFix(as_widget(p), savefile)
+  ) %>%
+  add_histogram(x = ~(validUniqueFeatureSums), xbins = list(start = 0, size = binSizeUniqueFeatures, end = upperLimitUniqueFeatures), name = glue("unique features
+    (bin size: {binSizeUniqueFeatures})"), text = relativeUniqueFeatureText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> unique features', sep = "")) %>%
+  add_histogram(x = ~(validUMISums), xbins = list(start = 0, size = binSizeUMIs, end = upperLimitUMIs), name = glue("UMIs
+    (bin size: {binSizeUMIs})"), text = relativeUMIText, hovertemplate = paste('<b>%{y} (%{text} %)</b> cells have <b>%{x}</b> UMIs', sep = "")) %>%
+  layout(barmode = "overlay", title = glue("distribution of unique feature/
+    UMI counts"), xaxis = xlabel, yaxis = ylabel, hovermode = "compare")
+p1
 cat(" done.\n")
+cat("saving histograms to file ...")
+savefile <- glue("{output_dir}{plot_file_prefix}_feat_dist_hist.html")
+saveWidgetFix(as_widget(p1), savefile)
+cat(" done.\n")
+
+# plot violins of feature/UMI distribution
+cat("ploting unique features/UMIs per barcode as violin plot ...")
+p2a <- plot_ly(
+  alpha = 0.6
+  ) %>%
+  add_trace(x = validUMISums, type = "violin", points = "all", name = glue("total
+    features
+    per
+    barcode"), box = list(visible = TRUE), meanline = list(visible = TRUE), spanmode = "hard") %>%
+  layout(barmode = "overlay", title = glue("total/unique features per barcode"), xaxis <- xlabel, yaxis <- ylabel, hovermode = "compare")
+p2b <- plot_ly(
+  alpha = 0.6
+  ) %>%
+  add_trace(x = validUniqueFeatureSums, type = "violin", points = "all", name = glue("unique
+    features
+    per
+    barcode"), box = list(visible = TRUE), meanline = list(visible = TRUE), spanmode = "hard") %>%
+  layout(barmode = "overlay", xaxis <- xlabel, yaxis <- ylabel, hovermode = "compare")
+p2 <- subplot(p2a, p2b, nrows = 2)
+p2
+cat(" done.\n")
+cat("saving violin plots to file ...")
+savefile <- glue("{output_dir}{plot_file_prefix}_feat_dist_violin.html")
+saveWidgetFix(as_widget(p2), savefile)
+cat(" done.\n")
+cat("all done.\n")
