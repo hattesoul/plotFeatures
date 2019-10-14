@@ -57,6 +57,9 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 # store colors
+# RESET="\[$(tput sgr0)\]"
+RESET="\[\e[0m\]"
+BOLD="\[\e[1m\]"
 MAGENTA="\[\033[0;35m\]"
 YELLOW="\[\033[01;33m\]"
 BLUE="\[\033[00;34m\]"
@@ -64,37 +67,64 @@ LIGHT_GRAY="\[\033[0;37m\]"
 CYAN="\[\033[0;36m\]"
 GREEN="\[\033[00;32m\]"
 RED="\[\033[0;31m\]"
-VIOLET='\[\033[01;35m\]'
+VIOLET="\[\033[01;35m\]"
+MYYELLOW="\[\033[38;5;11m\]"
+MYCYAN="\[\033[38;5;14m\]"
+
+FGDEFAULT="\[\e[38;5;39m\]"
+FGBLACK="\[\e[38;5;0m\]"
+FGGRAY="\[\e[38;5;242m\]"
+FGMAGENTA="\[\e[38;5;104m\]"
+FGBLUE="\[\e[38;5;75m\]"
+FGGREEN="\[\e[38;5;77m\]"
+FGYELLOW="\[\e[38;5;185m\]"
+FGRED="\[\e[38;5;197m\]"
+
+BGDEFAULT="\[\e[48;5;49m\]"
+BGBLACK="\[\e[48;5;40m\]"
+BGMAGENTA="\[\e[48;5;104m\]"
+BGBLUE="\[\e[48;5;75m\]"
+BGGREEN="\[\e[48;5;77m\]"
+BGYELLOW="\[\e[48;5;185m\]"
+BGRED="\[\e[48;5;197m\]"
 
 function color_my_prompt {
-  local __user_and_host="$GREEN\u@\h"
-  local __cur_location="$BLUE\W"           # capital 'W': current directory, small 'w': full file path
-  local __git_branch_color="$GREEN"
-  local __prompt_tail="$VIOLET$"
-  local __user_input_color="$GREEN"
-  local __git_branch='$(__git_ps1)';
+  # local __user_and_host="$GREEN\u@\h"
+  # local __cur_location="$BLUE\W"           # capital 'W': current directory, small 'w': full file path
+  local __git_branch_color="$FGGREEN"
+  # local __prompt_tail="$VIOLET$"
+  # local __user_input_color="$GREEN"
+  # local __git_branch='$(__git_ps1)';
 
   # colour branch name depending on state
   if [[ "$(__git_ps1)" =~ "*" ]]; then     # if repository is dirty
-      __git_branch_color="$RED"
+      __git_branch_color="$FGRED"
   elif [[ "$(__git_ps1)" =~ "$" ]]; then   # if there is something stashed
-      __git_branch_color="$YELLOW"
+      __git_branch_color="$FGYELLOW"
   elif [[ "$(__git_ps1)" =~ "%" ]]; then   # if there are only untracked files
-      __git_branch_color="$LIGHT_GRAY"
+      __git_branch_color="$FGGRAY"
   elif [[ "$(__git_ps1)" =~ "+" ]]; then   # if there are staged files
-      __git_branch_color="$CYAN"
+      __git_branch_color="$FGMAGENTA"
   fi
 
   # Build the PS1 (Prompt String)
   # PS1="$__user_and_host $__cur_location$__git_branch_color$__git_branch $__prompt_tail$__user_input_color "
   git_branch() {
-      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
+      MYBRANCH=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+      if test ${#MYBRANCH} -gt 0; then
+        MYBRANCH="[$__git_branch_color$MYBRANCH$RESET]"
+        # MYBRANCH=$MYNEWBRANCH
+      fi
   }
 
   if [ "$color_prompt" = yes ]; then
       # PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
       # PS1="\d \t \[$(tput bold)\]\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;11m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]\\$\[$(tput sgr0)\]"
-      PS1="\[$(tput sgr0)\]\d \t \[$(tput bold)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]@\[\033[38;5;11m\]\h\[$(tput sgr0)\]:\[\033[38;5;14m\]\w \[$(tput sgr0)\][$__git_branch_color$(git_branch)\[$(tput sgr0)\]]\$ "
+      # export PS1="\[\033[38;5;0m\]\[\033[48;5;97m\]\d\[$(tput sgr0)\]\[\033[38;5;15m\]\[\033[48;5;-1m\]>\[$(tput sgr0)\]\[\033[38;5;0m\]\[\033[48;5;32m\]\t\[$(tput sgr0)\]\[\033[38;5;15m\]\[\033[48;5;-1m\]>\[$(tput sgr0)\]\[\033[38;5;0m\]\[\033[48;5;41m\]\u@\h\[$(tput sgr0)\]\[\033[38;5;15m\]\[\033[48;5;-1m\]>\[$(tput sgr0)\]\[\033[38;5;0m\]\[\033[48;5;221m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]\[\033[48;5;-1m\]>\\$ \$?\[$(tput sgr0)\]"
+      git_branch
+      # PS1="📅$RESET\d 🕓\t \[$(tput bold)\]$MYYELLOW\u$RESET@$MYYELLOW\h$RESET:$MYCYAN\w$RESET$MYBRANCH$RESET\$ "
+      # PS1="$RESET$BGMAGENTA$FGBLACK▌📆\d$BGBLUE$FGMAGENTA▌$FGBLACK🕓\t$BGGREEN$FGBLUE▌$FGBLACK🙂$BOLD\u$RESET$BGGREEN$FGBLACK@\h$RESET$FGGREEN▌\n$BGYELLOW$FGBLACK▌📂\w$RESET$FGYELLOW▌$RESET$MYBRANCH$RESET\$ "
+      PS1="$RESET$BGMAGENTA$FGBLACK▌📆\d$BGBLUE$FGMAGENTA▌$FGBLACK🕓\t$BGGREEN$FGBLUE▌$FGBLACK🤓$BOLD\u$RESET$BGYELLOW$FGGREEN▌$FGBLACK💻\h$BGRED$FGYELLOW▌$FGBLACK📂\w$RESET$FGRED▌$RESET$MYBRANCH\$ "
   else
       PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
   fi
@@ -138,7 +168,7 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # colored GCC warnings and errors
-#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+# export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
 # some more ls aliases
 alias ll='ls -alF'
@@ -171,3 +201,6 @@ fi
 
 # add cellranger path
 export PATH="$PATH:/home/hattesoul/cellranger/cellranger-3.1.0"
+
+# start xbindkeys
+xbindkeys &
