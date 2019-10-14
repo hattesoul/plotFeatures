@@ -103,7 +103,7 @@ function color_my_prompt {
       # PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
       # PS1="$RESET\d \t \[$(tput bold)\]$MYYELLOW\u$RESET@$MYYELLOW\h$RESET:$MYCYAN\w$RESET$MYBRANCH$RESET\$ "
       git_branch
-      PS1="$RESET$BGMAGENTA$FGBLACK▌📆\d$BGBLUE$FGMAGENTA▌$FGBLACK🕓\t$BGGREEN$FGBLUE▌$FGBLACK🤓$BOLD\u$RESET$BGYELLOW$FGGREEN▌$FGBLACK💻\h$BGRED$FGYELLOW▌$FGBLACK📂\w$RESET$FGRED▌$RESET$MYBRANCH\$ "
+      PS1="$RESET$BGMAGENTA$FGBLACK▌📆\d$BGBLUE$FGMAGENTA▌$FGBLACK🕓\t$BGGREEN$FGBLUE▌$FGBLACK🤓\u$BGYELLOW$FGGREEN▌$FGBLACK💻\h$BGRED$FGYELLOW▌$FGBLACK📂\w$RESET$FGRED▌$RESET$MYBRANCH\$ "
   else
       PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
   fi
@@ -111,19 +111,6 @@ function color_my_prompt {
 
 # configure PROMPT_COMMAND which is executed each time before PS1
 export PROMPT_COMMAND=color_my_prompt
-
-#unset color_prompt force_color_prompt
-
-# if .git-prompt.sh exists, set options and execute it
-if [ -f ~/.git-prompt.sh ]; then
-  GIT_PS1_SHOWDIRTYSTATE=true
-  GIT_PS1_SHOWSTASHSTATE=true
-  GIT_PS1_SHOWUNTRACKEDFILES=true
-  GIT_PS1_SHOWUPSTREAM="auto"
-  GIT_PS1_HIDE_IF_PWD_IGNORED=true
-  GIT_PS1_SHOWCOLORHINTS=true
-  . ~/.git-prompt.sh
-fi
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
