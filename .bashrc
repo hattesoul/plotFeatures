@@ -60,7 +60,8 @@ fi
 RESET="\[\e[0m\]"
 BOLD="\[\e[1m\]"
 
-FGDEFAULT="\[\e[38;5;39m\]"
+FGDEFAULT="\[\e[38;5;15m\]"
+FGBGDEFAULT="\[\e[38;5;235m\]"
 FGBLACK="\[\e[38;5;0m\]"
 FGGRAY="\[\e[38;5;242m\]"
 FGMAGENTA="\[\e[38;5;104m\]"
@@ -103,7 +104,7 @@ function color_my_prompt {
       # PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
       # PS1="$RESET\d \t \[$(tput bold)\]$MYYELLOW\u$RESET@$MYYELLOW\h$RESET:$MYCYAN\w$RESET$MYBRANCH$RESET\$ "
       git_branch
-      PS1="$RESET$BGMAGENTA$FGBLACK▌📆\d$BGBLUE$FGMAGENTA▌$FGBLACK🕓\t$BGGREEN$FGBLUE▌$FGBLACK🤓\u$BGYELLOW$FGGREEN▌$FGBLACK💻\h$BGRED$FGYELLOW▌$FGBLACK📂\w$RESET$FGRED▌$RESET$MYBRANCH\$ "
+      PS1="$RESET$FGMAGENTA▐$BGMAGENTA$FGBLACK📆\d$BGBLUE$FGMAGENTA▌$FGBLACK🕓\t$BGGREEN$FGBLUE▌$FGBLACK🤓\u$BGYELLOW$FGGREEN▌$FGBLACK💻\h$BGRED$FGYELLOW▌$FGBLACK📂\w$RESET$FGRED▌$RESET$MYBRANCH\$ "
   else
       PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
   fi
